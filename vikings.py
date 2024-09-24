@@ -90,7 +90,7 @@ def recalculate_salary_slip(salary_slip):
         days_of_work_per_year = int(assignment_doc.days_of_work_per_year)
         tax_shield_allowance = assignment_doc.tax_shield_allowance
         
-    # frappe.msgprint(f"Base: {base_wage}")
+    frappe.msgprint(f"Base: {base_wage}")
 
     ph_taxshield_tardiness = 0
     # for row in salary_slip.statistical_earnings:
