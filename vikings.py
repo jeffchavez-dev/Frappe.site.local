@@ -308,8 +308,6 @@ def recalculate_salary_slip(salary_slip):
         # return  # Exit the function if it's not the 2nd cutoff
         
     else: 
-        
-        
         #if posting_date is in [28, 29, 30, 31] and there is a previous salary slip 
         
         filters = {
