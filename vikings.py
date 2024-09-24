@@ -303,7 +303,6 @@ def recalculate_salary_slip(salary_slip):
         salary_slip.rounded_total = round(salary_slip.net_pay)
         salary_slip.year_to_date = salary_slip.net_pay
         salary_slip.month_to_date = salary_slip.net_pay
-        #salary_slip.total_in_words = number_to_words(10000)
         salary_slip.total_taxable_income = sumtotal_taxable_income
         frappe.msgprint(f"BASIC PAY: {salary_slip.basic_pay}")    
         # return  # Exit the function if it's not the 2nd cutoff
