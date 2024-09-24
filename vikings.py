@@ -459,7 +459,4 @@ def recalculate_salary_slip(salary_slip):
     salary_slip.rounded_total = round(salary_slip.net_pay)
     salary_slip.year_to_date = salary_slip.net_pay
     salary_slip.month_to_date = salary_slip.net_pay
-    
-    
-    
 recalculate_salary_slip(doc)
