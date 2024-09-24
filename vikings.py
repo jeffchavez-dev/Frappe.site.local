@@ -423,7 +423,6 @@ def recalculate_salary_slip(salary_slip):
         
     total_deduction = round(total_deduction - .1,2)
     salary_slip.gross_pay = total_earnings
-    # salary_slip.basic_pay = sc_basic_pay + .1 - ph_tardiness
     salary_slip.total_taxable_deduction = total_taxable_deduction
     
 
