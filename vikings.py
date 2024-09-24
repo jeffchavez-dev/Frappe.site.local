@@ -449,10 +449,7 @@ def recalculate_salary_slip(salary_slip):
         for row in salary_slip.deductions:
             if row.salary_component == "PH - Withholding Tax":
                 frappe.msgprint("PH_tax shows: {ph_withholding}")
-                row.amount = ph_withholding
-    
-    
-    
+                row.amount = ph_withholding    
     salary_slip.total_deduction = total_deduction + ph_withholding
     salary_slip.net_pay = salary_slip.gross_pay - salary_slip.total_deduction
     salary_slip.base_net_pay = salary_slip.net_pay
