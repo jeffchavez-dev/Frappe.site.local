@@ -53,7 +53,6 @@ def recalculate_salary_slip(salary_slip):
     """
     result = frappe.db.sql(late_in_query, (employee, start_date, end_date), as_dict=True)
     total_late_in = round(result[0].total_late_in if result and result[0].total_late_in else 0.0,3)
-    # frappe.msgprint(f"Total Late In: {employee} | {total_late_in}")
     
     salary_slip.late_in
     undertime_query = """
