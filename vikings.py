@@ -309,7 +309,6 @@ def recalculate_salary_slip(salary_slip):
         
     else: 
         #if posting_date is in [28, 29, 30, 31] and there is a previous salary slip 
-        
         filters = {
         "employee": employee,
         "end_date": ("<", start_date),
@@ -317,7 +316,6 @@ def recalculate_salary_slip(salary_slip):
         }
         
         previous_slip = frappe.get_list("Salary Slip", filters=filters, fields=["name"], limit=1, order_by="end_date desc")
-        
         if previous_slip:
             previous_slip_name = previous_slip[0].name
             previous_slip_cut_off_day = previous_slip[0].posting_date
