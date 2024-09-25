@@ -41,7 +41,7 @@ def recalculate_salary_slip(salary_slip):
     start_date = salary_slip.start_date
     end_date = salary_slip.end_date
     posting_date = salary_slip.posting_date
-    frappe.msgprint(f"posting date {posting_date}")
+    # frappe.msgprint(f"posting date {posting_date}")
     late_in_query = """
         SELECT
             SUM(attendance.late_in) AS total_late_in
@@ -53,6 +53,29 @@ def recalculate_salary_slip(salary_slip):
     """
     result = frappe.db.sql(late_in_query, (employee, start_date, end_date), as_dict=True)
     total_late_in = round(result[0].total_late_in if result and result[0].total_late_in else 0.0,3)
+    
+    
+    
+    absence_query = """
+    SELECT
+        COUNT(*) AS total_absences
+    FROM
+        `tabAttendance` AS attendance
+    WHERE
+        attendance.employee = %s
+        AND attendance.attendance_date BETWEEN %s AND %s
+        AND attendance.status = 'Absent'
+    """
+    result = frappe.db.sql(absence_query, (employee, start_date, end_date), as_dict=True)
+    
+    # Access the total_absences value from the result
+    total_absences = result[0]['total_absences']
+    # frappe.msgprint(f" Result {total_absences}")
+    
+    salary_slip.absent_days = total_absences
+    
+    
+    # frappe.msgprint(f"Total Late In: {employee} | {total_late_in}")
     
     salary_slip.late_in
     undertime_query = """
@@ -66,7 +89,7 @@ def recalculate_salary_slip(salary_slip):
     """
     result = frappe.db.sql(undertime_query, (employee, start_date, end_date), as_dict=True)
     total_undertime = round(result[0].total_undertime if result and result[0].total_undertime else 0.0,3)
-    frappe.msgprint(f"Total Undertime: {total_undertime}")
+    # frappe.msgprint(f"Total Undertime: {total_undertime}")
     
     # Fetch the most recent submitted Salary Structure Assignment for the employee
     salary_structure_assignment = frappe.get_all(
@@ -90,7 +113,7 @@ def recalculate_salary_slip(salary_slip):
         days_of_work_per_year = int(assignment_doc.days_of_work_per_year)
         tax_shield_allowance = assignment_doc.tax_shield_allowance
         
-    frappe.msgprint(f"Base: {base_wage}")
+    # frappe.msgprint(f"Base: {base_wage}")
 
     ph_taxshield_tardiness = 0
     # for row in salary_slip.statistical_earnings:
@@ -155,7 +178,7 @@ def recalculate_salary_slip(salary_slip):
     
     #UNDERTIME
     sm_undertime_basic = (hourly_rate * total_undertime)
-    frappe.msgprint(f"sm_undertime_basic: {sm_undertime_basic}")
+    # frappe.msgprint(f"sm_undertime_basic: {sm_undertime_basic}")
     
     for row in salary_slip.earnings:
         if row.salary_component == "SM - Tardiness":
@@ -199,17 +222,17 @@ def recalculate_salary_slip(salary_slip):
         date_parts = posting_date.split("-")
         cut_off_day = int(date_parts[2])
         salary_slip.day = cut_off_day
-        frappe.msgprint(f"posting date day {cut_off_day}")
+        # frappe.msgprint(f"posting date day {cut_off_day}")
     else:
         cut_off_day = salary_slip.day
-        frappe.msgprint(f"posting date day else{cut_off_day}")
+        # frappe.msgprint(f"posting date day else{cut_off_day}")
     
     # total_taxable_income should be Basic pay + All basic SM Absences + Undertime + Tardiness
     basic_taxable_income = 0 #All basic SM Absences + Undertime + Tardiness
     basic_taxable_income = sm_undertime_basic + sm_tardiness_basic + sm_absences_basic
-    frappe.msgprint(f" basic_taxable_income:  {basic_taxable_income}")
+    # frappe.msgprint(f" basic_taxable_income:  {basic_taxable_income}")
     salary_slip.total_taxable_income = salary_slip.basic_pay + basic_taxable_income 
-    frappe.msgprint(f" total_taxable_income:  {salary_slip.total_taxable_income}")
+    # frappe.msgprint(f" total_taxable_income:  {salary_slip.total_taxable_income}")
     sumtotal_taxable_income = 0 # for sss_contribution and ph_tax calculation
     sumtotal_taxable_income = salary_slip.total_taxable_income
     
@@ -221,7 +244,7 @@ def recalculate_salary_slip(salary_slip):
           # frappe.msgprint(f"SSS Contribution Table:")
         for table in sss_contribution_table:
             if table.from_amount <= sumtotal_taxable_income <= table.to_amount:
-                frappe.msgprint(f" SSS EMP: {table.employee_contribution}")
+                # frappe.msgprint(f" SSS EMP: {table.employee_contribution}")
                 employee_con = table.employee_contribution
                 employer_con = table.employer_contribution
                 employee_com = table.employee_compensation
@@ -230,10 +253,10 @@ def recalculate_salary_slip(salary_slip):
     
     #updated PHIC AND HDMF AMOUNT
     if cut_off_day not in [28, 29, 30, 31]:
-        frappe.msgprint(f"cut_off_day {cut_off_day}")
+        # frappe.msgprint(f"cut_off_day {cut_off_day}")
         phic = 0
         if salary_slip.basic_pay <= 10000:
-            frappe.msgprint(f"salary_slip.basic_pay: {salary_slip.basic_pay}")
+            # frappe.msgprint(f"salary_slip.basic_pay: {salary_slip.basic_pay}")
             phic = 250
         elif salary_slip.basic_pay > 40000:
             phic = 1600 
@@ -269,7 +292,7 @@ def recalculate_salary_slip(salary_slip):
             if row.salary_component == "PH - SSS Contribution":
                     # employee_con = row.amount
                     row.amount = employee_con  
-                    frappe.msgprint(f" There is SSS")
+                    # frappe.msgprint(f" There is SSS")
                     
         for row in salary_slip.statistical_deductions:
             if row.salary_component == "PH - SSS Employee Compensation":
@@ -303,12 +326,16 @@ def recalculate_salary_slip(salary_slip):
         salary_slip.rounded_total = round(salary_slip.net_pay)
         salary_slip.year_to_date = salary_slip.net_pay
         salary_slip.month_to_date = salary_slip.net_pay
+        #salary_slip.total_in_words = number_to_words(10000)
         salary_slip.total_taxable_income = sumtotal_taxable_income
-        frappe.msgprint(f"BASIC PAY: {salary_slip.basic_pay}")    
+        # frappe.msgprint(f"BASIC PAY: {salary_slip.basic_pay}")    
         # return  # Exit the function if it's not the 2nd cutoff
         
     else: 
+        
+        
         #if posting_date is in [28, 29, 30, 31] and there is a previous salary slip 
+        
         filters = {
         "employee": employee,
         "end_date": ("<", start_date),
@@ -316,10 +343,11 @@ def recalculate_salary_slip(salary_slip):
         }
         
         previous_slip = frappe.get_list("Salary Slip", filters=filters, fields=["name"], limit=1, order_by="end_date desc")
+        
         if previous_slip:
             previous_slip_name = previous_slip[0].name
             previous_slip_cut_off_day = previous_slip[0].posting_date
-            frappe.msgprint(f"there was a previous slip: {previous_slip_cut_off_day}")
+            # frappe.msgprint(f"there was a previous slip: {previous_slip_cut_off_day}")
             previous_slip_doc = frappe.get_doc("Salary Slip", previous_slip_name)
             previous_cut_off_basic_pay = previous_slip_doc.basic_pay
             previous_total_taxable_income = previous_slip_doc.total_taxable_income
@@ -375,28 +403,28 @@ def recalculate_salary_slip(salary_slip):
             monthly_sss_contribution = 0
             monthly_total_taxable_income = 0 
             monthly_total_taxable_income = previous_total_taxable_income + sumtotal_taxable_income
-            frappe.msgprint(f"previous_total_taxable_income {previous_total_taxable_income}")
-            frappe.msgprint(f"total_taxable_income {sumtotal_taxable_income}")
-            frappe.msgprint(f" monthly_total_taxable_income {monthly_total_taxable_income}")
+            # frappe.msgprint(f"previous_total_taxable_income {previous_total_taxable_income}")
+            # frappe.msgprint(f"total_taxable_income {sumtotal_taxable_income}")
+            # frappe.msgprint(f" monthly_total_taxable_income {monthly_total_taxable_income}")
             
             for row in previous_slip_doc.get("deductions"):
                 if row.salary_component == "PH - SSS Contribution":
                     previous_cut_off_sss = row.amount
-                    frappe.msgprint(f" There was SSS {previous_cut_off_sss}")
+                    # frappe.msgprint(f" There was SSS {previous_cut_off_sss}")
                     break
             
             for table in sss_contribution_table:
                 if table.from_amount <= monthly_total_taxable_income <= table.to_amount:
-                    frappe.msgprint(f" SSS EMP: {table.employee_contribution}")
+                    # frappe.msgprint(f" SSS EMP: {table.employee_contribution}")
                     employee_con = table.employee_contribution - previous_cut_off_sss
-                    frappe.msgprint(f" Monthly SSS_con {table.employee_contribution}")
+                    # frappe.msgprint(f" Monthly SSS_con {table.employee_contribution}")
                     break
                 
             for row in salary_slip.deductions:
                 if row.salary_component == "PH - SSS Contribution":
                         # employee_con = row.amount
                         row.amount = employee_con  
-                        frappe.msgprint(f" There is SSS")
+                        # frappe.msgprint(f" There is SSS")
                         
                 for row in salary_slip.statistical_deductions:
                     if row.salary_component == "PH - SSS Employee Compensation":
@@ -423,11 +451,12 @@ def recalculate_salary_slip(salary_slip):
         
     total_deduction = round(total_deduction - .1,2)
     salary_slip.gross_pay = total_earnings
+    # salary_slip.basic_pay = sc_basic_pay + .1 - ph_tardiness
     salary_slip.total_taxable_deduction = total_taxable_deduction
     
 
     monthly_total_taxable_income = previous_total_taxable_income + salary_slip.total_taxable_income
-    frappe.msgprint(f"SUM: {monthly_total_taxable_income}")
+    # frappe.msgprint(f"SUM: {monthly_total_taxable_income}")
     
     #calculate PH WITHHOLDING TAX 
     ph_withholding_tax_table = frappe.get_doc("PH Withholding Tax Table", "2024 Witholding Tax Table")
@@ -448,13 +477,18 @@ def recalculate_salary_slip(salary_slip):
         ph_withholding = round((sumtotal_taxable_income - from_amount) * (withholding_percent/100),2)
         for row in salary_slip.deductions:
             if row.salary_component == "PH - Withholding Tax":
-                # frappe.msgprint("PH_tax shows: {ph_withholding}")
-                row.amount = ph_withholding    
-                
+                frappe.msgprint("PH_tax shows: {ph_withholding}")
+                row.amount = ph_withholding
+    
+    
+    
     salary_slip.total_deduction = total_deduction + ph_withholding
     salary_slip.net_pay = salary_slip.gross_pay - salary_slip.total_deduction
     salary_slip.base_net_pay = salary_slip.net_pay
     salary_slip.rounded_total = round(salary_slip.net_pay)
     salary_slip.year_to_date = salary_slip.net_pay
     salary_slip.month_to_date = salary_slip.net_pay
+    
+    
+    
 recalculate_salary_slip(doc)
