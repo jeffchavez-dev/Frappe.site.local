@@ -25,15 +25,13 @@ def recalculate_salary_slip(salary_slip):
     """
     result = frappe.db.sql(absence_query, (employee, start_date, end_date), as_dict=True)
 
-
-
-    frappe.msgprint(f" Absent: {salary_slip.absent_days}") 
-    
     # Access the total_absences value from the result
     total_absences = result[0]['total_absences']
     # frappe.msgprint(f" Result {total_absences}")
     
     salary_slip.absent_days = total_absences
+
+    frappe.msgprint(f" Absent: {salary_slip.absent_days}") 
 
 
     salary_structure_assignment = frappe.get_all(
