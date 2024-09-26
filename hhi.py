@@ -2,7 +2,7 @@ def recalculate_salary_slip(salary_slip):
     if salary_slip.payroll_frequency != "Bimonthly":
         return  # Exit the function if not "Bimonthly"
     
-    frappe.msgprint(f" Absent: {salary_slip.absent_days}") 
+    
     
     employee = salary_slip.employee
     start_date = salary_slip.start_date
@@ -13,7 +13,29 @@ def recalculate_salary_slip(salary_slip):
     employee_date_joined = str(employee_doc.date_of_joining)
     # frappe.msgprint(f"Joined: {employee_date_joined}")
     
+    absence_query = """
+    SELECT
+        COUNT(*) AS total_absences
+    FROM
+        `tabAttendance` AS attendance
+    WHERE
+        attendance.employee = %s
+        AND attendance.attendance_date BETWEEN %s AND %s
+        AND attendance.status = 'Absent'
+    """
+    result = frappe.db.sql(absence_query, (employee, start_date, end_date), as_dict=True)
+
+
+
+    frappe.msgprint(f" Absent: {salary_slip.absent_days}") 
     
+    # Access the total_absences value from the result
+    total_absences = result[0]['total_absences']
+    # frappe.msgprint(f" Result {total_absences}")
+    
+    salary_slip.absent_days = total_absences
+
+
     salary_structure_assignment = frappe.get_all(
         "Salary Structure Assignment",
         filters={"employee": employee, "docstatus": 1},
