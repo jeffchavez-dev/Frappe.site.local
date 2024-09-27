@@ -1,4 +1,4 @@
-def calculate_thirteen_month:
+def calculate_thirteen_month(doc):
     salary_component = "PH_13M_1"
     
     thirteen_month_query = """
@@ -38,4 +38,4 @@ def calculate_thirteen_month:
  
     doc.other_benefits_mwe = thirteen_month_amount
 
-calculate
+calculate_thirteen_month(doc)
