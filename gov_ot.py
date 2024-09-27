@@ -1,9 +1,12 @@
+
+
+
 # government deduction
 
 def calculate_government_deduction(doc):
     
     emp = doc.employee 
-    # frappe.msgprint(f"Emp: {emp}")   
+    frappe.msgprint(f"Emp: {emp}")   
     
     components_as_gov_contribution = frappe.get_list(
         'Salary Component',
@@ -51,14 +54,15 @@ def calculate_government_deduction(doc):
                 for row in result:
                     frappe.msgprint(f"Employee: {row.employee}, Salary Component: {row.abbr} Amount: {row.amount} on {row.posting_date}")
                     total_amount_ot = total_amount_ot + row.amount
-                    # frappe.msgprint(f"total_amount_ot {total_amount_ot}")
+                    frappe.msgprint(f"total_amount_ot {total_amount_ot}")
+                    doc.overtime_pay = total_amount_ot
             else:
                 frappe.msgprint("no result")
                 
     else:
         frappe.msgprint("No Component with Overtime")
         
-    frappe.msgprint(f"total_amount_ot {total_amount_ot}")
+    # frappe.msgprint(f"total_amount_ot {total_amount_ot}")
     
         
     if components_as_gov_contribution:
@@ -91,33 +95,74 @@ def calculate_government_deduction(doc):
         
             if result:
                 for row in result:
-                    frappe.msgprint(f"Employee: {row.employee}, Salary Component: {row.abbr} Amount: {row.amount} on {row.posting_date}")
+                    # frappe.msgprint(f"Employee: {row.employee}, Salary Component: {row.abbr} Amount: {row.amount} on {row.posting_date}")
                     total_amount_gov = total_amount_gov + row.amount
-                    # frappe.msgprint(f"total_amount {total_amount}")
+                    frappe.msgprint(f"total_amount_gov_con {total_amount}")
+                    doc.contributions = total_amount_gov
             else:
                 frappe.msgprint("no result")
                 
-    frappe.msgprint(f"total_amount_final {total_amount_gov}")   
+    # frappe.msgprint(f"total_amount_final {total_amount_gov}")   
+    
+
     
     
-    doc.overtime_pay = total_amount_ot
-    doc.contributions = total_amount_gov
     
+    
+    salary_component = "PH_13M_1"
+    
+    thirteen_month_query = """
+               SELECT
+                    ss.employee,
+                    sd.abbr,
+                    sd.amount,
+                    ss.posting_date
+                FROM
+                    `tabSalary Slip` ss
+                LEFT JOIN
+                    `tabSalary Detail` sd ON
+                    sd.parent = ss.name  -- Linking deductions to the filtered Salary Slip
+                WHERE
+                    ss.employee = %(emp)s 
+                    AND sd.abbr = %(abbr)s
+                    AND ss.docstatus = 1  -- Filter based on the 'emp' variable 
+                    
+                ORDER BY
+                    ss.posting_date DESC  -- Ordering by posting date
+                LIMIT 1
+                """
+            
+    thirteen_month_comp = frappe.db.sql(thirteen_month_query, {'emp': emp, 'abbr': salary_component}, as_dict=True)
+        
+        
+    if thirteen_month_comp:
+      if isinstance(thirteen_month_comp, list):
+        for row in thirteen_month_comp:
+          frappe.msgprint(f"TWO only")
+          frappe.msgprint(f"employee {row['employee']}")
+          frappe.msgprint(f"posting_date {row['posting_date']}")
+          frappe.msgprint(f"thirteen_month {row['abbr']}")
+          frappe.msgprint(f"thirteen_month {row['amount']}")
+          thirteen_month_amount = row['amount']
+ 
+ 
+    doc.other_benefits_mwe = thirteen_month_amount
     frappe.msgprint(f"contributions: {doc.contributions}")
+    
 calculate_government_deduction(doc)
 
 
 
 
 
-# # display 13th month pay
+# # # display 13th month pay
 # def display_thirteen_month(doc):
     
-#     previous_slip = frappe.get_list("Salary Slip",
-#         filters=filters, 
-#         fields=["name", "basic_pay", "salary_component"], 
-#         limit=12, 
-#         order_by="end_date desc"
-#         )
+    #     posting_date = "12"
+    # thirteen_month = frappe.get_list("Salary Slip",
+    #     filters={"employee": emp },
+    #     fields=["employee", "thirteen_month_pay", "posting_date"],
+    #     limit = 1
+    #     )
 # display_thirteen_month(doc)
     
