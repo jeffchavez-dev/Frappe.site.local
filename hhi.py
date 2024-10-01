@@ -2,8 +2,6 @@ def recalculate_salary_slip(salary_slip):
     if salary_slip.payroll_frequency != "Bimonthly":
         return  # Exit the function if not "Bimonthly"
     
-    
-    
     employee = salary_slip.employee
     start_date = salary_slip.start_date
     end_date = salary_slip.end_date
@@ -12,6 +10,7 @@ def recalculate_salary_slip(salary_slip):
     employee_doc = frappe.get_doc("Employee", employee)
     employee_date_joined = str(employee_doc.date_of_joining)
     # frappe.msgprint(f"Joined: {employee_date_joined}")
+    
     
     absence_query = """
     SELECT
@@ -32,8 +31,8 @@ def recalculate_salary_slip(salary_slip):
     salary_slip.absent_days = total_absences
 
     frappe.msgprint(f" Absent: {salary_slip.absent_days}") 
-
-
+    
+    
     salary_structure_assignment = frappe.get_all(
         "Salary Structure Assignment",
         filters={"employee": employee, "docstatus": 1},
@@ -53,29 +52,41 @@ def recalculate_salary_slip(salary_slip):
         base_wage = assignment_doc.base
         days_of_work_per_year = int(assignment_doc.days_of_work_per_year)
         
-    frappe.msgprint(f"Base: {base_wage}")
+    # frappe.msgprint(f"Base: {base_wage}")
     
     daily_rate = (base_wage * 12) / days_of_work_per_year
-    frappe.msgprint(f"daily_rate: {daily_rate}")
+    # frappe.msgprint(f"daily_rate: {daily_rate}")
     
     dv_lwop = 0
     
     for row in salary_slip.earnings:
             if row.salary_component == "DV - LWOP":
+                # lwop = row.amount 
+                # frappe.msgprint(f"wrong lwop: {lwop}")
                 dv_lwop = salary_slip.absent_days * -daily_rate
+                
                 row.amount = dv_lwop
-                frappe.msgprint(f"lwop: {dv_lwop}")
+                # frappe.msgprint(f"lwop: {dv_lwop}")
                 
     for row in salary_slip.earnings:
             if row.salary_component == "DV - Undertime":
                 dv_undertime = row.amount
-                frappe.msgprint(f"dv_undertime: {dv_undertime}")
+                # frappe.msgprint(f"dv_undertime: {dv_undertime}")
                 
     for row in salary_slip.earnings:
             if row.salary_component == "DV - Basic Pay":
                 dv_basic_pay = row.amount
-                frappe.msgprint(f"dv_basic_pay: {dv_basic_pay}")
+                # frappe.msgprint(f"dv_basic_pay: {dv_basic_pay}")
     
+    total_earnings_row_amount = 0        
+    for row in salary_slip.earnings:
+            total_earnings_row_amount = total_earnings_row_amount + row.amount
+            # frappe.msgprint(f"{row.salary_component}'s amount is {row.amount}. Total: {total_earnings_row_amount}")
+            
+    # frappe.msgprint(f"total_row_amount: {total_earnings_row_amount}")       
+    # frappe.msgprint(f"gross_pay: {total_earnings_row_amount + dv_lwop}")
+    
+    salary_slip.gross_pay = total_earnings_row_amount
     salary_slip.basic_pay = dv_lwop + dv_undertime + dv_basic_pay
   
     
@@ -150,11 +161,19 @@ def recalculate_salary_slip(salary_slip):
         # frappe.msgprint(f"Posting Day is: " + posting_date_day)
             
         hdmf = 0
+        gross_pay = salary_slip.gross_pay
         for row in salary_slip.deductions:
             if row.salary_component == "PH - HDMF Contribution":
-                hdmf = row.amount * 2
-                frappe.msgprint(f"HDMF: {row.amount}")
+                
+                if gross_pay <= 1500:
+                    hdmf = 0.01 * gross_pay
+                elif gross_pay >= 5000:
+                    hdmf = 200
+                else:
+                    hdmf = 0.02 * gross_pay
                 row.amount = hdmf
+                frappe.msgprint(f"HDMF: {row.amount}")
+                
         phic = (0.05 * base_wage) * 0.5
         for row in salary_slip.deductions:
             if row.salary_component == "PH - PHIC Contribution":
@@ -179,8 +198,8 @@ def recalculate_salary_slip(salary_slip):
         sss_contribution_table = sss_contribution.contribution_table
         
         
-        frappe.msgprint(f"For SSS {salary_slip.basic_pay + previous_cut_off_basic_pay}")
-        frappe.msgprint(f"previous_cut_off_basic_pay {previous_cut_off_basic_pay}")
+        # frappe.msgprint(f"For SSS {salary_slip.basic_pay + previous_cut_off_basic_pay}")
+        # frappe.msgprint(f"previous_cut_off_basic_pay {previous_cut_off_basic_pay}")
         if sss_contribution_table:
             for table in sss_contribution_table:
                 if table.from_amount <= (salary_slip.basic_pay + previous_cut_off_basic_pay):
@@ -189,7 +208,7 @@ def recalculate_salary_slip(salary_slip):
                         employer_con = table.employer_contribution
                         employee_com = table.employee_compensation
                         mdf = table.mpf_employee_contribution
-                        frappe.msgprint(f"MDF {mdf}")
+                        # frappe.msgprint(f"MDF {mdf}")
                         sss_con = employee_con + mdf
                         break
             
@@ -301,7 +320,7 @@ def recalculate_salary_slip(salary_slip):
         ph_withholding = round((sumtotal_taxable_income - from_amount) * (withholding_percent/100),2)
         for row in salary_slip.deductions:
             if row.salary_component == "PH - Withholding Tax":
-                frappe.msgprint(f"PH_Tax shows : {ph_withholding}")
+                # frappe.msgprint(f"PH_Tax shows : {ph_withholding}")
                 row.amount = ph_withholding
 
         
