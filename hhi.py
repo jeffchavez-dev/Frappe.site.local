@@ -83,8 +83,8 @@ def recalculate_salary_slip(salary_slip):
             total_earnings_row_amount = total_earnings_row_amount + row.amount
             # frappe.msgprint(f"{row.salary_component}'s amount is {row.amount}. Total: {total_earnings_row_amount}")
             
-    frappe.msgprint(f"total_row_amount: {total_earnings_row_amount}")       
-    frappe.msgprint(f"gross_pay: {total_earnings_row_amount + dv_lwop}")
+    # frappe.msgprint(f"total_row_amount: {total_earnings_row_amount}")       
+    # frappe.msgprint(f"gross_pay: {total_earnings_row_amount + dv_lwop}")
     
     salary_slip.gross_pay = total_earnings_row_amount
     salary_slip.basic_pay = dv_lwop + dv_undertime + dv_basic_pay
