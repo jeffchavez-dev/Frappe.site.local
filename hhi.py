@@ -1,4 +1,9 @@
 def recalculate_salary_slip(salary_slip):
+
+
+    # Cut-offs
+    # 1.21 -- 02.04 > 2.08
+    # 2.05 -- 02.20 > 2.24
     if salary_slip.payroll_frequency != "Bimonthly":
         return  # Exit the function if not "Bimonthly"
     
