@@ -1,17 +1,14 @@
 def calculate_13th_month(salary_slip):
-    """Calculates the 13th month based on salary components tagged as part of 13th month pay."""
-    frappe.msgprint(f"1")
+    
     employee = salary_slip.employee
-    start_date = salary_slip.start_date # 12/24 (Da Vinci) | 12/28 (HHI) previous year
-    end_date = salary_slip.end_date # 12/08 (Da Vinci) | 12/12 (HHI)current year
+    start_date = salary_slip.start_date 
+    end_date = salary_slip.end_date 
     
     posting_date = salary_slip.posting_date
     
     posting_month_day = str(posting_date.split("-")[1]) + "-" + str(posting_date.split("-")[2])
     start_month_day = str(start_date.split("-")[1]) + "-" + str(start_date.split("-")[2])
     end_month_day = str(end_date.split("-")[1]) + "-" + str(end_date.split("-")[2])
-    # day = str(posting_date.split("-")[2])
-    
     # frappe.msgprint(f"posting_date: {posting_date}")
     # frappe.msgprint(f"posting_date: {month_day}")
    
@@ -19,8 +16,11 @@ def calculate_13th_month(salary_slip):
     if posting_month_day == "12-08" or posting_month_day == "12-24":
         for row in salary_slip.earnings:
             if row.salary_component == "PH - 13th Month Pay":
-                # thirteen_month = row.amount
+                thirteen_month = row.amount
                 row.amount = 0
+                salary_slip.net_pay = salary_slip.net_pay - thirteen_month
+                salary_slip.rounded_total = round(salary_slip.rounded_total - thirteen_month, 0)
+                salary_slip.gross_pay = salary_slip.gross_pay - thirteen_month
       
     if posting_month_day == "12-15":
         try:
