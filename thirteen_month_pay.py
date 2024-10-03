@@ -18,26 +18,34 @@ def calculate_13th_month(salary_slip):
             if row.salary_component == "PH - 13th Month Pay":
                 thirteen_month = row.amount
                 row.amount = 0
-                salary_slip.net_pay = salary_slip.net_pay - thirteen_month
-                salary_slip.rounded_total = round(salary_slip.rounded_total - thirteen_month, 0)
-                salary_slip.gross_pay = salary_slip.gross_pay - thirteen_month
+                salary_slip.thirteen_month_pay = 0
+                # salary_slip.net_pay = salary_slip.net_pay - thirteen_month
+                # salary_slip.rounded_total = round(salary_slip.rounded_total - thirteen_month, 0)
+                # salary_slip.gross_pay = salary_slip.gross_pay - thirteen_month
       
     if posting_month_day == "12-15":
         try:
-            if start_month_day != "12-15" and end_month_day != "12-15":
+            if start_month_day != "12-01" and end_month_day != "12-15":
                 frappe.msgprint(f"{start_month_day} and {end_month_day}")
                 frappe.msgprint("Start and End Date must be 12-15")
-                earnings_to_show = []
+                components_to_show = []
                 for row in salary_slip.earnings:
-                            earnings_to_show.append(row)
+                            components_to_show.append(row)
+                
                 return
             else: 
-                earnings_to_show = []
+                components_to_show = []
                 for row in salary_slip.earnings:
                         if row.salary_component == "PH - 13th Month Pay":
                             thirteen_month = row.amount
-                            earnings_to_show.append(row)
-                salary_slip.earnings = earnings_to_show
+                            components_to_show.append(row)
+                for row in salary_slip.deductions:
+                            components_to_show.append(row)
+                for row in salary_slip.statistical_earnings:
+                            components_to_show.append(row)
+                for row in salary_slip.statistical_deductions:
+                            components_to_show.append(row)
+                salary_slip.earnings = components_to_show
                 salary_slip.basic_pay = 0
                 salary_slip.net_pay = thirteen_month
                 salary_slip.rounded_total = thirteen_month
