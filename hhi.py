@@ -1,9 +1,4 @@
 def recalculate_salary_slip(salary_slip):
-
-
-    # Cut-offs
-    # 1.21 -- 02.04 > 2.08
-    # 2.05 -- 02.20 > 2.24
     if salary_slip.payroll_frequency != "Bimonthly":
         return  # Exit the function if not "Bimonthly"
     
@@ -72,12 +67,12 @@ def recalculate_salary_slip(salary_slip):
                 
                 row.amount = dv_lwop
                 # frappe.msgprint(f"lwop: {dv_lwop}")
-                
+    dv_undertime = 0  
     for row in salary_slip.earnings:
             if row.salary_component == "DV - Undertime":
                 dv_undertime = row.amount
                 # frappe.msgprint(f"dv_undertime: {dv_undertime}")
-                
+    dv_basic_pay = 0     
     for row in salary_slip.earnings:
             if row.salary_component == "DV - Basic Pay":
                 dv_basic_pay = row.amount
