@@ -21,16 +21,20 @@ def recalculate_attendance():
         actual_working_hours = 0
         
         if not doc.early_exit:
-            if undertime > 1:
-                frappe.msgprint(f" {doc.employee_name}'s undertime is {undertime}. Please validate on {doc.attendance_date}.")
+            if undertime == 4:
+                frappe.msgprint(f" {doc.employee_name}'s undertime is {undertime}. Please validate on if it's halfday {doc.attendance_date}.")
+            elif undertime != 0: 
+                frappe.db.set_value("Attendance", doc.name, "undertime", 0)
+                frappe.msgprint(f"Updated Undertime: {undertime} by {doc.employee_name}")
             # else: 
             #     frappe.msgprint(f"No Undertime: {undertime} by {doc.employee_name}")
-            #   frappe.db.set_value("Attendance", doc.name, "undertime", 0)
+                
              
         if not doc.late_entry:
             if late_in > 0:
                 frappe.msgprint(f"Should be no late entry: {late_in} by {doc.employee_name} ")
-                # frappe.db.set_value("Attendance", doc.name, "late_in", 0)
+                frappe.db.set_value("Attendance", doc.name, "late_in", 0)
+                frappepe.msgprint(f"Updated Late_in {doc.employee_name}")
         
         # if doc.company != "HO-Itinerary":
         #     frappe.msgprint(f"{doc.employee_name}'s company is {doc.company}")
@@ -56,19 +60,22 @@ def recalculate_attendance():
             )
             # Get the daily_hours from the Salary Structure Assignment
             daily_hours = assignment_doc.daily_hours
+            
         # set the status to Rest Day if the employee is rest day according to Attendance Calculation
         if doc.rest_day:
             if working_hours == 0 and doc.status == 'Present':
                 # frappe.msgprint(f" status: {doc.status}, but {doc.employee_name} is rest_day on {doc.attendance_date}.")
                 frappe.db.set_value("Attendance", doc.name, "Status", "Rest day")
                 frappe.msgprint("Changed")
-            elif working_hours > 0 and expected_hours == 0:
+            elif working_hours > 0 and daily_hours > 0:
                 frappe.msgprint(f" rest_day_duty {doc.employee_name} on {doc.attendance_date}") 
                 if overtime > 0:
                     frappe.msgprint(f" {overtime}") 
                     new_overtime = round(working_hours - daily_hours, 1)
                     frappe.msgprint(f"new_overtime: {new_overtime}") 
-        #     # else:
+            elif working_hours > 0 and daily_hours == 0:
+                frappe.msgprint(f"Assign salary structure for {doc.employee_name} ")
+            # else:
             #     frappe.msgprint(f" status: {doc.status}, but {doc.employee_name} working_hours is {working_hours} and is rest_day on {doc.attendance_date}.")
             
        
