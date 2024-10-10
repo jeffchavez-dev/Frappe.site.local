@@ -75,8 +75,8 @@ def recalculate_attendance():
                     frappe.msgprint(f"new_overtime: {new_overtime}") 
             elif working_hours > 0 and daily_hours == 0:
                 frappe.msgprint(f"Assign salary structure for {doc.employee_name} ")
-            # else:
-            #     frappe.msgprint(f" status: {doc.status}, but {doc.employee_name} working_hours is {working_hours} and is rest_day on {doc.attendance_date}.")
+            else:
+                frappe.msgprint(f" status: {doc.status}, but {doc.employee_name} working_hours is {working_hours} and is rest_day on {doc.attendance_date}.")
             
        
         
