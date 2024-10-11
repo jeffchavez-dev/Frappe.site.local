@@ -1,16 +1,14 @@
 def recalculate_salary_slip(salary_slip):
-
+    if salary_slip.payroll_frequency != "Bimonthly":
+        return  # Exit the function if not "Bimonthly"
     # Cut-offs
     # 1.21 -- 02.04 > 2.08
     # 2.05 -- 02.20 > 2.24
-    if salary_slip.payroll_frequency != "Bimonthly":
-        return  # Exit the function if not "Bimonthly"
-    
     employee = salary_slip.employee
     start_date = salary_slip.start_date
     end_date = salary_slip.end_date
     posting_date = salary_slip.posting_date
-    
+    frappe.msgprint(f"posting_date {posting_date}")
     employee_doc = frappe.get_doc("Employee", employee)
     employee_date_joined = str(employee_doc.date_of_joining)
     # frappe.msgprint(f"Joined: {employee_date_joined}")
@@ -29,12 +27,17 @@ def recalculate_salary_slip(salary_slip):
     result = frappe.db.sql(absence_query, (employee, start_date, end_date), as_dict=True)
 
     # Access the total_absences value from the result
-    total_absences = result[0]['total_absences']
-    # frappe.msgprint(f" Result {total_absences}")
     
-    salary_slip.absent_days = total_absences
+    if result:
+        total_absences = result[0]['total_absences']
+        salary_slip.absent_days = total_absences
+    else:
+        # Handle the case where no results are found
+        total_absences = 0  # Set a default value or raise an exception
+    
+    
 
-    frappe.msgprint(f" Absent: {salary_slip.absent_days}") 
+    # frappe.msgprint(f" Absent: {salary_slip.absent_days}") 
     
     
     salary_structure_assignment = frappe.get_all(
@@ -92,26 +95,29 @@ def recalculate_salary_slip(salary_slip):
     
     salary_slip.gross_pay = total_earnings_row_amount
     salary_slip.basic_pay = dv_lwop + dv_undertime + dv_basic_pay
-  
-    
-    
-    
-    
-    
+ 
     if employee_doc and employee_doc.date_of_joining:
+        frappe.msgprint(f"Employee joined")
         employee_date_joined = str(employee_doc.date_of_joining)
-        
         # Split the date strings into lists
-        posting_date_list = posting_date.split("-")
-        date_joined_list = employee_date_joined.split("-")
+        
     
         # Assuming YYYY-MM-DD format, calculate days using arithmetic
         try:
+            frappe.msgprint(f"Employee joined: {employee_date_joined}")
+            if posting_date:
+                posting_date_list = posting_date.split("-")
+                frappe.msgprint(f"posting_date_list: {posting_date_list}")
+            else:
+                frappe.msgprint(f"check posting date: {posting_date}")
+            date_joined_list = employee_date_joined.split("-")
+            
             if len(posting_date_list) != 3 or len(date_joined_list) != 3:
                 frappe.throw("Invalid date format in posting date or date of joining.")
-                
-            #  posting_date_list = ['2024', '08', '08']
-            #  date_joined_list = ['2023', '10', '26']
+            
+            # Print posting_date_list after successful split     
+            frappe.msgprint(f"posting_date_list: {posting_date_list}")
+            
             # Calculate year, month, and day differences
             total_days = 0
             year_diff = int(posting_date_list[0]) - int(date_joined_list[0])
@@ -351,3 +357,69 @@ def recalculate_salary_slip(salary_slip):
         
 
 recalculate_salary_slip(doc)
+
+
+
+
+
+
+def calculate_13th_month(salary_slip):
+    
+    employee = salary_slip.employee
+    start_date = salary_slip.start_date 
+    end_date = salary_slip.end_date 
+    
+    posting_date = salary_slip.posting_date
+    
+    posting_month_day = str(posting_date.split("-")[1]) + "-" + str(posting_date.split("-")[2])
+    start_month_day = str(start_date.split("-")[1]) + "-" + str(start_date.split("-")[2])
+    end_month_day = str(end_date.split("-")[1]) + "-" + str(end_date.split("-")[2])
+
+   
+    thirteen_month = 0
+    if posting_month_day == "12-08" or posting_month_day == "12-24":
+        for row in salary_slip.earnings:
+            if row.salary_component == "PH - 13th Month Pay":
+                thirteen_month = row.amount
+                row.amount = 0
+                salary_slip.thirteen_month_pay = 0
+      
+    if posting_month_day == "12-15":
+        try:
+            if start_month_day != "12-01" and end_month_day != "12-15":
+                frappe.msgprint(f"{start_month_day} and {end_month_day}")
+                frappe.msgprint("Start and End Date must be 12-15")
+                components_to_show = []
+                for row in salary_slip.earnings:
+                            components_to_show.append(row)
+                
+                return
+            else: 
+                components_to_show = []
+                for row in salary_slip.earnings:
+                        if row.salary_component == "PH - 13th Month Pay":
+                            thirteen_month = row.amount
+                            components_to_show.append(row)
+                for row in salary_slip.deductions:
+                            components_to_show.append(row)
+                for row in salary_slip.statistical_earnings:
+                            components_to_show.append(row)
+                for row in salary_slip.statistical_deductions:
+                            components_to_show.append(row)
+                salary_slip.earnings = components_to_show
+                salary_slip.basic_pay = 0
+                salary_slip.net_pay = thirteen_month
+                salary_slip.rounded_total = thirteen_month
+                salary_slip.gross_pay = 0
+                salary_slip.thirteen_month_pay = thirteen_month
+        except ValueError:
+            frappe.msgprint("Invalid date format or missing data.")
+    
+    # frappe.msgprint(f"thirteen_month: {thirteen_month}")    
+  
+
+    
+    
+
+    
+calculate_13th_month(doc)
