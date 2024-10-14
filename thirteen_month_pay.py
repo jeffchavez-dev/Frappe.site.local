@@ -57,7 +57,18 @@ def calculate_13th_month(salary_slip):
     # frappe.msgprint(f"thirteen_month: {thirteen_month}")    
     # frappe.msgprint(f"salary_slip.thirteen_month_pay: {salary_slip.thirteen_month_pay}")    
 
+     if posting_month_day != "12-15":
+        hide_thirteen_month = []
+        for row in salary_slip.earnings:
+            if row.salary_component != "DV - 13th Month Pay":
+                # frappe.msgprint("Cut off not 12-15")
+                hide_thirteen_month.append(row)
+        salary_slip.earnings = hide_thirteen_month
+        
     
+    frappe.msgprint(f"thirteen_month: {thirteen_month}")    
+  
+
     
 
     
