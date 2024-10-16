@@ -247,63 +247,74 @@ def recalculate_salary_slip(salary_slip):
       
         
         statistical_deductions_test = []
-        
-        # def calculate_component_amount(row, component):
-        #     # Replace this with your actual calculation logic
-        #     if component == "PH - SSS Employee Compensation":
-        #         return calculate_sss_contribution(row.salary)
-        #     if component == "PH - Pag-IBIG Contribution":
-        #         return calculate_pagibig_contribution(row.salary)
 
-        if salary_slip.statistical_deductions:
+        if not salary_slip.statistical_deductions:
+                frappe.msgprint(f"There is no SD")
             # for row in salary_slip.deductions:
-            #     # if row.salary_component == "PH - PHIC Contribution":
-            #     #     row.amount = phic
-            #     #     frappe.msgprint(f"phic: {phic}")
+            #     if row.salary_component == "PH - PHIC Contribution":
+            #         row.amount = phic
                 
             #         statistical_deductions_test.append(row)
             # Add more components as needed
-    
-            components_to_add = [
-                "PH - SSS Employee Compensation",
-                "PH - SSS Employer Contribution",
-                "PH - PHIC Employer Contribution",
-                "PH - HDMF Employer Contribution",
-            ]
- 
-            for component in components_to_add:
-                frappe.msgprint(f"Adding components")
-                
-                             # Check if the component already exists in the statistical_deductions_test list
-                # component_exists = False
-                # for existing_row in statistical_deductions_test:
-                #     if existing_row.salary_component == component:
-                #         component_exists = True
-                #         break
+                added_components = set()
+
+                components_to_add = [
+                    "PH - SSS Employee Compensation",
+                    "PH - SSS Employer Contribution",
+                    "PH - PHIC Employer Contribution",
+                    "PH - HDMF Employer Contribution",
+                ]
             
-                # # If component doesn't exist, create a new row
-                # if not component_exists:
-                #     new_row = {
-                #         "salary_component": component,
-                #         "amount": 0  # Replace with your initial amount calculation
-                #     }
-                #     statistical_deductions_test.append(new_row)
-                #     frappe.msgprint("new rows added")
-                    
-                for row in salary_slip.statistical_deductions:
-                    frappe.msgprint(f"Adding components 2")
-                    if row.salary_component != component:
-                        frappe.msgprint(f"Adding components 2 {component}")
-                        # Calculate the amount based on your specific logic
-                        row.salary_component = component
-                        frappe.msgprint(f"new components {row.salary_component}")
-                        amount = 0 #calculate_component_amount(row, component)
-                        row.amount = amount
-                        statistical_deductions_test.append(row)
+                for component in components_to_add:
+                    frappe.msgprint(f"component: {component}")
+                    if component not in added_components:
+                        for row in salary_slip.statistical_deductions:
+                            added_components.add(row.salary_component)
+                            row.salary_component = component
+                            frappe.msgprint(f"added_component: {row.salary_component}")
+                            amount = 0 #calculate_component_amount(row, component)
+                            row.amount = amount
+                            statistical_deductions_test.append(row)
+                            frappe.msgprint(f"SD: {statistical_deductions_test}")
+    
+        if salary_slip.statistical_deductions:
+                frappe.msgprint(f"There is SD")
+                added_components = set()
+
+                components_to_add = [
+                    "PH - SSS Employee Compensation",
+                    "PH - SSS Employer Contribution",
+                    "PH - PHIC Employer Contribution",
+                    "PH - HDMF Employer Contribution",
+                ]
+            
+                for component in components_to_add:
+                    frappe.msgprint(f"component: {component}")
+                    if component not in added_components:
+                        for row in salary_slip.statistical_deductions:
+                            added_components.add(row.salary_component)
+                            row.salary_component = component
+                            frappe.msgprint(f"added_component: {row.salary_component}")
+                            amount = 0 #calculate_component_amount(row, component)
+                            row.amount = amount
+                            statistical_deductions_test.append(row)
+                            frappe.msgprint(f"SD: {statistical_deductions_test}")
+                            
+                # for component in components_to_add:
+                #     component_exists = False
+                #     for row in salary_slip.statistical_deductions:
+                #         if row.salary_component == component:
+                #             component_exists = True
+                #             break
+            
+                #     if not component_exists:
+                #         new_row = {
+                #             "salary_component": component,
+                #             "amount": 0  # Replace with your initial amount calculation
+                #         }
+                #         statistical_deductions_test.append(new_row)
         
-            salary_slip.statistical_deductions = statistical_deductions_test
-                    
-              
+        # salary_slip.statistical_deductions = statistical_deductions_test
         frappe.msgprint(f"SD: {salary_slip.statistical_deductions}")
         
         
