@@ -365,7 +365,6 @@ def recalculate_salary_slip(salary_slip):
         for ph_withholding_tax_slab in ph_withholding_tax_slabs:
             # use gross_pay instead of basic pay
             if ph_withholding_tax_slab.from_amount <= salary_slip.gross_pay <= ph_withholding_tax_slab.to_amount:
-                frappe.msgprint("1")
                 withholding_percent = ph_withholding_tax_slab.percent_withheld
                 from_amount = ph_withholding_tax_slab.from_amount
                 break
