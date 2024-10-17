@@ -12,7 +12,7 @@ def recalculate_salary_slip(salary_slip):
     # frappe.msgprint(f"posting_date_str {posting_date_str}")
     posting_date_date = posting_date_str.split(" ")
     posting_date_list = posting_date_date[0].split("-")
-    frappe.msgprint(f"posting_date {posting_date_list}")
+    # frappe.msgprint(f"posting_date {posting_date_list}")
     employee_doc = frappe.get_doc("Employee", employee)
     employee_date_joined = str(employee_doc.date_of_joining)
     # frappe.msgprint(f"Joined: {employee_date_joined}")
@@ -31,6 +31,7 @@ def recalculate_salary_slip(salary_slip):
     result = frappe.db.sql(absence_query, (employee, start_date, end_date), as_dict=True)
 
     # Access the total_absences value from the result
+    
     
     if result:
         total_absences = result[0]['total_absences']
@@ -75,12 +76,9 @@ def recalculate_salary_slip(salary_slip):
     
     for row in salary_slip.earnings:
             if row.salary_component == "DV - LWOP":
-                # lwop = row.amount 
-                # frappe.msgprint(f"wrong lwop: {lwop}")
-                dv_lwop = salary_slip.absent_days * -daily_rate
-                
+                dv_lwop = total_absences * -daily_rate
                 row.amount = dv_lwop
-                # frappe.msgprint(f"lwop: {dv_lwop}")
+
                 
                 
     # check components tagged as basic Pay
@@ -127,7 +125,6 @@ def recalculate_salary_slip(salary_slip):
     )
     
     if components_is_statistical:
-        frappe.msgprint(f"There are statistical components")
         statistical_components = []
         statistical_deductions = []
         for statistical in components_is_statistical:
@@ -158,9 +155,6 @@ def recalculate_salary_slip(salary_slip):
             
             if len(posting_date_list) != 3 or len(date_joined_list) != 3:
                 frappe.throw("Invalid date format in posting date or date of joining.")
-            
-            # Print posting_date_list after successful split     
-            frappe.msgprint(f"posting_date_list: {posting_date_list}")
             
             # Calculate year, month, and day differences
             total_days = 0
@@ -208,6 +202,7 @@ def recalculate_salary_slip(salary_slip):
     else:
         previous_cut_off_basic_pay = 0
     
+
     
     posting_date_day = posting_date_date[0].split("-")[2]
     
@@ -229,50 +224,22 @@ def recalculate_salary_slip(salary_slip):
                 frappe.msgprint(f"HDMF: {row.amount}")
                 
         phic = (0.05 * base_wage) * 0.5
-        statistical_deductions_test = []
+        
         for row in salary_slip.deductions:
             if row.salary_component == "PH - PHIC Contribution":
                 row.amount = phic
-                statistical_deductions_test.append(row)
                 frappe.msgprint(f"phic: {phic}")
                 
-            elif row.salary_component == "PH - HDMF Contribution":
+            if row.salary_component == "PH - HDMF Contribution":
                 row.amount = hdmf
 
         for row in salary_slip.statistical_deductions:
             if row.salary_component == "PH - PHIC Employer Contribution":
                 frappe.msgprint(f"PHIC ER")
                 row.amount = phic
-            elif row.salary_component == "PH - HDMF Employer Contribution":
+            if row.salary_component == "PH - HDMF Employer Contribution":
                 frappe.msgprint(f"HDMF ER")
                 row.amount = hdmf
-                
-        salary_slip.statistical_deductions = statistical_deductions_test
-        
-        # if salary_slip.statistical_deductions:
-        #     frappe.msgprint(f"1")
-        #     for row in salary_slip.statistical_deductions:
-        #                 row.salary_component = "PH - PHIC Employer Contribution"
-        #                 row.amount = phic
-        #                 statistical_deductions_test.append(row)
-            
-            
-        # # # if salary_slip.statistical_deductions:
-        # # #     frappe.msgprint(f"2")   
-        # #     for row_one in salary_slip.statistical_deductions:
-        # #                 row_one.salary_component = "PH - HDMF Employer Contribution"
-        # #                 row_onw.amount = hdmf
-        # #                 statistical_deductions_test.append(row_one)
-                    
-        # salary_slip.statistical_deductions = statistical_deductions_test   
-            
-      
-      
-
-        # for row in salary_slip.statistical_deductions:
-        #     if row.salary_component in ["PH - SSS Employee Compensation", "PH - SSS Employer Contribution", "PH - PHIC Employer Contribution", "PH - HDMF Employer Contribution"]:
-        #         # statistical_deductions_to_show.append(row)
-        #         salary_slip.statistical_deductions = statistical_deductions
         
         #calculate SSS Contribution        
         sss_contribution = frappe.get_doc("SSS Contribution", "SSS TABLE 2023")
@@ -295,12 +262,15 @@ def recalculate_salary_slip(salary_slip):
             
             for row in salary_slip.deductions:
                 if row.salary_component == "PH - SSS Contribution":
+                     frappe.msgprint(f"SSS CONTRI")
                      row.amount = sss_con  
                         
             for row in salary_slip.statistical_deductions:
                 if row.salary_component == "PH - SSS Employee Compensation":
+                    frappe.msgprint(f"SSS EMP")
                     row.amount = employee_com
                 elif row.salary_component == "PH - SSS Employer Contribution":
+                    frappe.msgprint(f"SSS ER")
                     row.amount = employer_con
                 
                 
@@ -391,18 +361,20 @@ def recalculate_salary_slip(salary_slip):
     ph_withholding = 0
 
     if ph_withholding_tax_slabs:
-        # frappe.msgprint("PH_tax shows")
+        frappe.msgprint("PH_tax shows")
         for ph_withholding_tax_slab in ph_withholding_tax_slabs:
-            if ph_withholding_tax_slab.from_amount <= sumtotal_taxable_income <= ph_withholding_tax_slab.to_amount:
-                # frappe.msgprint("1")
+            # use gross_pay instead of basic pay
+            if ph_withholding_tax_slab.from_amount <= salary_slip.gross_pay <= ph_withholding_tax_slab.to_amount:
+                frappe.msgprint("1")
                 withholding_percent = ph_withholding_tax_slab.percent_withheld
                 from_amount = ph_withholding_tax_slab.from_amount
                 break
         
-        ph_withholding = round((sumtotal_taxable_income - from_amount) * (withholding_percent/100),2)
+        ph_withholding = round((salary_slip.gross_pay - from_amount) * (withholding_percent/100),2)
         for row in salary_slip.deductions:
             if row.salary_component == "PH - Withholding Tax":
-                # frappe.msgprint(f"PH_Tax shows : {ph_withholding}")
+                frappe.msgprint(f"gross_pay : {salary_slip.gross_pay}")
+                frappe.msgprint(f"PH_Tax shows : {ph_withholding}")
                 row.amount = ph_withholding
 
         
