@@ -144,7 +144,7 @@ def recalculate_salary_slip(salary_slip):
     
         # Assuming YYYY-MM-DD format, calculate days using arithmetic
         try:
-            frappe.msgprint(f"Employee joined: {employee_date_joined}")
+            # frappe.msgprint(f"Employee joined: {employee_date_joined}")
             # if posting_date:
             #     posting_date_list = posting_date.split("-")
             #     frappe.msgprint(f"posting_date_list: {posting_date_list}")
@@ -262,7 +262,7 @@ def recalculate_salary_slip(salary_slip):
             
             for row in salary_slip.deductions:
                 if row.salary_component == "PH - SSS Contribution":
-                     frappe.msgprint(f"SSS CONTRI")
+                    #  frappe.msgprint(f"SSS CONTRI")
                      row.amount = sss_con  
                         
             for row in salary_slip.statistical_deductions:
