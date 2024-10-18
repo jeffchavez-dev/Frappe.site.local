@@ -297,15 +297,15 @@ def recalculate_salary_slip(salary_slip):
             frappe.msgprint("PH_tax shows")
             for ph_withholding_tax_slab in ph_withholding_tax_slabs:
                 # use gross_pay instead of basic pay
-                if ph_withholding_tax_slab.from_amount <= salary_slip.gross_pay <= ph_withholding_tax_slab.to_amount:
+                if ph_withholding_tax_slab.from_amount <= mothly_gross <= ph_withholding_tax_slab.to_amount:
                     withholding_percent = ph_withholding_tax_slab.percent_withheld
                     from_amount = ph_withholding_tax_slab.from_amount
                     break
             
-            ph_withholding = round((salary_slip.gross_pay - from_amount) * (withholding_percent/100),2)
+            ph_withholding = round((mothly_gross - from_amount) * (withholding_percent/100),2)
             for row in salary_slip.deductions:
                 if row.salary_component == "PH - Withholding Tax":
-                    frappe.msgprint(f"gross_pay : {salary_slip.gross_pay}")
+                    frappe.msgprint(f"mothly_gross : {mothly_gross}")
                     frappe.msgprint(f"PH_Tax shows : {ph_withholding}")
                     row.amount = ph_withholding
 
