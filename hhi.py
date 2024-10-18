@@ -280,7 +280,33 @@ def recalculate_salary_slip(salary_slip):
             
             total_deduction = hdmf + phic + sss_con #use later for calculation of withholding tax
                 
+        
+
+            #calculate PH-Withholding Tax
+        ph_withholding_tax_table = frappe.get_doc("PH Withholding Tax Table", "2018 - 2022")
+        ph_withholding_tax_slabs = ph_withholding_tax_table.slabs
+        withholding_percent = 0
+        from_amount = 0
+        ph_withholding = 0
+
+        if ph_withholding_tax_slabs:
+            frappe.msgprint("PH_tax shows")
+            for ph_withholding_tax_slab in ph_withholding_tax_slabs:
+                # use gross_pay instead of basic pay
+                if ph_withholding_tax_slab.from_amount <= salary_slip.gross_pay <= ph_withholding_tax_slab.to_amount:
+                    withholding_percent = ph_withholding_tax_slab.percent_withheld
+                    from_amount = ph_withholding_tax_slab.from_amount
+                    break
             
+            ph_withholding = round((salary_slip.gross_pay - from_amount) * (withholding_percent/100),2)
+            for row in salary_slip.deductions:
+                if row.salary_component == "PH - Withholding Tax":
+                    frappe.msgprint(f"gross_pay : {salary_slip.gross_pay}")
+                    frappe.msgprint(f"PH_Tax shows : {ph_withholding}")
+                    row.amount = ph_withholding
+
+
+
         salary_slip.total_deduction = total_deduction
         salary_slip.total_taxable_deduction = total_taxable_deduction
         salary_slip.net_pay = salary_slip.gross_pay - salary_slip.total_deduction
@@ -353,28 +379,7 @@ def recalculate_salary_slip(salary_slip):
     sumtotal_taxable_income = total_basic_pay - total_deduction  
     # frappe.msgprint(f"sumtotal_taxable_income {sumtotal_taxable_income}")
     
-    #calculate PH-Withholding Tax
-    ph_withholding_tax_table = frappe.get_doc("PH Withholding Tax Table", "2018 - 2022")
-    ph_withholding_tax_slabs = ph_withholding_tax_table.slabs
-    withholding_percent = 0
-    from_amount = 0
-    ph_withholding = 0
 
-    if ph_withholding_tax_slabs:
-        frappe.msgprint("PH_tax shows")
-        for ph_withholding_tax_slab in ph_withholding_tax_slabs:
-            # use gross_pay instead of basic pay
-            if ph_withholding_tax_slab.from_amount <= salary_slip.gross_pay <= ph_withholding_tax_slab.to_amount:
-                withholding_percent = ph_withholding_tax_slab.percent_withheld
-                from_amount = ph_withholding_tax_slab.from_amount
-                break
-        
-        ph_withholding = round((salary_slip.gross_pay - from_amount) * (withholding_percent/100),2)
-        for row in salary_slip.deductions:
-            if row.salary_component == "PH - Withholding Tax":
-                frappe.msgprint(f"gross_pay : {salary_slip.gross_pay}")
-                frappe.msgprint(f"PH_Tax shows : {ph_withholding}")
-                row.amount = ph_withholding
 
         
     if posting_date_day != "24":
