@@ -289,8 +289,11 @@ def recalculate_salary_slip(salary_slip):
         withholding_percent = 0
         from_amount = 0
         ph_withholding = 0
+        monthly_gross = 0
+
 
         if ph_withholding_tax_slabs:
+            mothly_gross = previous_cut_off_gross + salary_slip.gross_pay
             frappe.msgprint("PH_tax shows")
             for ph_withholding_tax_slab in ph_withholding_tax_slabs:
                 # use gross_pay instead of basic pay
