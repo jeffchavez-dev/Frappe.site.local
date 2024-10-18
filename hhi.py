@@ -192,6 +192,8 @@ def recalculate_salary_slip(salary_slip):
         
     previous_slip = frappe.get_list("Salary Slip", filters=filters, fields=["name"], limit=1, order_by="end_date desc")
     
+    previous_cut_off_gross = 0
+    previous_cut_off_basic_pay = 0
     if previous_slip:
         previous_slip_name = previous_slip[0].name
         previous_slip_doc = frappe.get_doc("Salary Slip", previous_slip_name)
@@ -200,8 +202,6 @@ def recalculate_salary_slip(salary_slip):
         # frappe.msgprint(f"previous_cut_off_basic_pay: {previous_cut_off_basic_pay}")
         # previous_total_taxable_income = previous_slip_doc.total_taxable_income
         # salary_slip.previous_cut_off_basic_pay = previous_cut_off_basic_pay
-    else:
-        previous_cut_off_basic_pay = 0
     
 
     
