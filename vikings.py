@@ -336,10 +336,7 @@ def recalculate_salary_slip(salary_slip):
         #calculate SSS Contribution        
         sss_contribution = frappe.get_doc("SSS Contribution", "SSS TABLE 2023")
         sss_contribution_table = sss_contribution.contribution_table
-        
-        
-        # frappe.msgprint(f"For SSS {salary_slip.basic_pay + previous_cut_off_basic_pay}")
-        # frappe.msgprint(f"previous_cut_off_basic_pay {previous_cut_off_basic_pay}")
+
         if sss_contribution_table:
             for table in sss_contribution_table:
                 if table.from_amount <= (salary_slip.basic_pay + previous_cut_off_basic_pay):
