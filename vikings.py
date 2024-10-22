@@ -355,12 +355,7 @@ def recalculate_salary_slip(salary_slip):
             if row.salary_component not in ["PH - SSS Contribution", "PH - PHIC Contribution", "PH - Withholding Tax", "PH - HDMF Contribution"] or row.amount != 0:
                 deductions_to_show.append(row)
         salary_slip.deductions = deductions_to_show
-                
-            # Add logic to hide the "Mobile Allowance" in the salary slip
-        # for row in salary_slip.earnings:
-        #     if row.salary_component == "Mobile Load Allowance":
-        #         row.amount = 0  # Set the amount to 0 to hide the Mobile Allowance
-        # You may also want to remove the Mobile Allowance from total_earnings if it was hidden
+            
         total_earnings = sum(row.amount for row in salary_slip.earnings) 
         total_deduction = 0
         total_taxable_deduction = 0
