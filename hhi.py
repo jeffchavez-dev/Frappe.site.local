@@ -252,7 +252,7 @@ def recalculate_salary_slip(salary_slip):
         if sss_contribution_table:
             for table in sss_contribution_table:
                 if table.from_amount <= (salary_slip.gross_pay + previous_slip_gross):
-                    if table.from_amount <= (salary_slip.basic_pay + previous_cut_off_basic_pay) <= table.to_amount:
+                    if table.from_amount <= (salary_slip.gross_pay + previous_slip_gross) <= table.to_amount:
                         employee_con = table.employee_contribution
                         employer_con = table.employer_contribution
                         employee_com = table.employee_compensation
