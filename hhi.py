@@ -249,6 +249,7 @@ def recalculate_salary_slip(salary_slip):
         
         # frappe.msgprint(f"For SSS {salary_slip.basic_pay + previous_cut_off_basic_pay}")
         # frappe.msgprint(f"previous_cut_off_basic_pay {previous_cut_off_basic_pay}")
+        sss_con = 0
         if sss_contribution_table:
             for table in sss_contribution_table:
                 #computation based on gross pay updated on 10/24/2024
