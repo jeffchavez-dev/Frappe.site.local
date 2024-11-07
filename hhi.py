@@ -260,13 +260,14 @@ def recalculate_salary_slip(salary_slip):
                         employee_com = table.employee_compensation
                         mdf = table.mpf_employee_contribution
                         # frappe.msgprint(f"MDF {mdf}")
-                        sss_con = employee_con + mdf
+                        sss_amount = employee_con + mdf
                         break
             
             for row in salary_slip.deductions:
                 if row.salary_component == "PH - SSS Contribution":
                     #  frappe.msgprint(f"SSS CONTRI")
-                     row.amount = sss_con  
+                    sss_con = sss_amount
+                    row.amount = sss_con  
                         
             for row in salary_slip.statistical_deductions:
                 if row.salary_component == "PH - SSS Employee Compensation":
