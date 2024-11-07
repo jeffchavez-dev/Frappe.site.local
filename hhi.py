@@ -224,10 +224,11 @@ def recalculate_salary_slip(salary_slip):
                 row.amount = hdmf
                 # frappe.msgprint(f"HDMF: {row.amount}")
                 
-        phic = (0.05 * base_wage) * 0.5
+        phic = 0
         
         for row in salary_slip.deductions:
             if row.salary_component == "PH - PHIC Contribution":
+                phic = (0.05 * base_wage) * 0.5
                 row.amount = phic
                 # frappe.msgprint(f"phic: {phic}")
                 
