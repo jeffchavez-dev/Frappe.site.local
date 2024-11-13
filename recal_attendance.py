@@ -2,9 +2,10 @@ def recalculate_attendance():
   try:
     data_list = frappe.get_list(
       "Attendance",
-      fields=["name", "overtime", "undertime", "expected_working_hours", "working_hours", "employee_name", "early_exit", "late_entry", "late_in", "attendance_date", "company", "rest_day", "status"],
-      filters=[["docstatus", "=", 1]],
-    #   limit = 7
+      fields=["name", "overtime", "undertime", "expected_working_hours", "working_hours", "employee_name", "early_exit", "late_entry", "late_in", "attendance_date", "company", "rest_day", "status", "night_differential", "docstatus"],
+      filters=[["docstatus", "=", 0]#, 
+      ],
+    #   limit = 1
     )
     
      # Fetch the most recent submitted Salary Structure Assignment for the employee
@@ -19,6 +20,8 @@ def recalculate_attendance():
         expected_hours = float(doc.expected_working_hours)
         working_hours = float(doc.working_hours)
         actual_working_hours = 0
+        night_differential = float(doc.night_differential)
+        docstatus = doc.docstatus
         
         if not doc.early_exit:
             if undertime == 4:
@@ -35,6 +38,18 @@ def recalculate_attendance():
                 frappe.msgprint(f"Should be no late entry: {late_in} by {doc.employee_name} ")
                 frappe.db.set_value("Attendance", doc.name, "late_in", 0)
                 frappepe.msgprint(f"Updated Late_in {doc.employee_name}")
+                
+        if night_differential:
+            # frappe.msgprint(f"Night Differential: {night_differential} by {doc.employee_name} ")
+            new_night_diff = round(night_differential - 1)
+            # frappe.db.set_value("Attendance", doc.name, "night_differential", new_night_diff)
+            frappe.db.set_value("Attendance", doc.name, {"night_differential": new_night_diff, "docstatus": 1})
+            frappe.msgprint("ND Updated")
+            #  frappe.db.set_value("Attendance", doc.name, docstatus, 1)
+            frappe.msgprint(f"status: {docstatus}")
+            if new_night_diff <= 0:
+                new_night_diff = 0
+                frappe.db.set_value("Attendance", doc.name, "night_differential", new_night_diff)
         
         # if doc.company != "HO-Itinerary":
         #     frappe.msgprint(f"{doc.employee_name}'s company is {doc.company}")
@@ -44,39 +59,25 @@ def recalculate_attendance():
         # if working_hours > expected_hours:
         #     frappe.msgprint(f" working_hours: {working_hours} is more than {expected_hours} | {doc.employee_name} on {doc.attendance_date}")
         
-        
-        
-        salary_structure_assignment = frappe.get_all(
-        "Salary Structure Assignment",
-        filters={"employee_name": doc.employee_name, "docstatus": 1},
-        fields=["name"],
-        order_by="creation DESC",
-        limit=1,
-        )
-        daily_hours = 0
-        if salary_structure_assignment:
-            assignment_doc = frappe.get_doc(
-                "Salary Structure Assignment", salary_structure_assignment[0].name
-            )
-            # Get the daily_hours from the Salary Structure Assignment
-            daily_hours = assignment_doc.daily_hours
             
         # set the status to Rest Day if the employee is rest day according to Attendance Calculation
-        if doc.rest_day:
-            if working_hours == 0 and doc.status == 'Present':
-                # frappe.msgprint(f" status: {doc.status}, but {doc.employee_name} is rest_day on {doc.attendance_date}.")
-                frappe.db.set_value("Attendance", doc.name, "Status", "Rest day")
+        if doc.rest_day and doc.status == 'Present':
+            if working_hours == 0:
+                frappe.msgprint(f" status: {doc.status}, but {doc.employee_name} is rest_day on {doc.attendance_date}.")
+                frappe.db.set_value("Attendance", doc.name, {"Status": "Rest day", "docstatus": 1})
                 frappe.msgprint("Changed")
-            elif working_hours > 0 and daily_hours > 0:
-                frappe.msgprint(f" rest_day_duty {doc.employee_name} on {doc.attendance_date}") 
-                if overtime > 0:
-                    frappe.msgprint(f" {overtime}") 
-                    new_overtime = round(working_hours - daily_hours, 1)
-                    frappe.msgprint(f"new_overtime: {new_overtime}") 
-            elif working_hours > 0 and daily_hours == 0:
-                frappe.msgprint(f"Assign salary structure for {doc.employee_name} ")
-            else:
-                frappe.msgprint(f" status: {doc.status}, but {doc.employee_name} working_hours is {working_hours} and is rest_day on {doc.attendance_date}.")
+            # elif working_hours > 0 and overtime > 8:
+            #     frappe.msgprint(f" rest_day_duty {doc.employee_name} on {doc.attendance_date}") 
+            #     # frappe.db.set_value("Attendance", doc.name, "working_hours", overtime)
+            #      # frappe.db.set_value("Attendance", doc.name, "overtime", overtime)
+            #     frappe.msgprint(f"working hours should be the overtime: {overtime}")
+            # else: #overtime > 8:
+            #     frappe.msgprint(f" rest_day_duty {doc.employee_name} on {doc.attendance_date}") 
+            #     frappe.msgprint(f"rest day duty: {doc.overtime}")
+            #      # frappe.db.set_value("Attendance", doc.name, "working_hours", overtime)
+            #      # frappe.db.set_value("Attendance", doc.name, "overtime", overtime)
+            #     frappe.msgprint(f"Rest Day OT is: {doc.overtime - 8}")
+
             
        
         
