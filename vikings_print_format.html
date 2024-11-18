@@ -43,32 +43,66 @@
 				<th class="text-center" colspan="3">Deductions</th>
 				<th class="text-center" colspan="2">Payroll Period</th>
 			</tr>
-			<tr>
-				<th>Description</th>
-				<th>Hours</th>
-				<th>Amount</th>
-				<th>Description</th>
-				<th>Hours</th>
-				<th>Amount</th>
-	            <th colspan="2"> {{ doc.start_date }} TO {{ doc.end_date }}</th>
-			</tr>
-			{%- for row in doc.earnings -%}
-    			<tr>
-    				<td> {{ row.salary_component }} </td>
-    				<td> 0.00</td>
-    				<td> {{ row.amount}} </td>
-    			</tr>
-			{%- endfor -%}
+			<!--<tr>-->
+			<!--	<th>Description</th>-->
+			<!--	<th>Hours</th>-->
+			<!--	<th>Amount</th>-->
+			<!--	<th>Description</th>-->
+			<!--	<th>Hours</th>-->
+			<!--	<th>Amount</th>-->
+	  <!--          <th colspan="2"> {{ doc.start_date }} TO {{ doc.end_date }}</th>-->
+			<!--</tr>-->
+			    <td colspan="3">
+                  <table class="table no-border p-0 m-0">
+                    {%- for row in doc.earnings -%}
+                    <tr>
+        				<th>Description</th>
+        				<th>Hours</th>
+        				<th>Amount</th>
+        			</tr>
+                    <tr>
+                      <td>{{ row.salary_component }}</td>
+                      <td>0.00</td>
+                      <td>{{ row.amount }}</td>
+                    </tr>
+                    {%- endfor -%}
+                  </table>
+                </td>
+                <td colspan="3">
+                  <table class="table no-border p-0 m-0">
+                    {%- for row in doc.deductions -%}
+                    <tr>
+        				<th>Description</th>
+        				<th>Hours</th>
+        				<th>Amount</th>
+        			</tr>
+                    <tr>
+                      <td>{{ row.salary_component }}</td>
+                      <td>0.00</td>
+                      <td>{{ row.amount }}</td>
+                    </tr>
+                    {%- endfor -%}
+                  </table>
+                </td>
+                 <td colspan="2">
+                  <table class="table no-border p-0 m-0">
+                    <tr>
+        	            <th colspan="2"> {{ doc.start_date }} TO {{ doc.end_date }}</th>
+        			</tr>
+                  </table>
+                </td>
+            </tr>
+            
+            <tr> 
+                <td>GROSS PAY: </td>
+                <td>{{ doc.gross_pay }}</td>
+            </tr>
 			
-			{%- for row in doc.deductions -%}
-    			<tr>
-    				<td> {{ row.salary_component }} </td>
-    				<td> 0.00</td>
-    				<td> {{ row.amount}} </td>
-    			</tr>
-			{%- endfor -%}
+	
 			
 			
 		</tbody>
 	</table>
     </div>
+    
+    
