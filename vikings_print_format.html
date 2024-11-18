@@ -1,0 +1,74 @@
+<div class="page-break">
+    <div class="print-heading">
+        <h2>{{doc.company}}</h2>
+    </div>
+    <div class="col-xs-6 column-break">
+        <div class="row">
+    		<div class="col-xs-5 text-left">
+    		    <h4>Employee No.</h4>
+    		</div>
+    		<div class="col-xs-6 value">
+    		    {{doc.employee}}
+    		</div>
+    	</div>
+    	 <div class="row">
+    		<div class="col-xs-5 text-left">
+    		    <h4>Employee Name</h4>
+    		</div>
+    		<div class="col-xs-6 value">
+    		    {{doc.employee_name}}
+    		</div>
+    	 </div>
+    	 <div class="row">
+    		<div class="col-xs-5 text-left">
+    		    <h4>Position</h4>
+    		</div>
+    		<div class="col-xs-6 value">
+    		    {{ frappe.db.get_value("Employee", {"employee_name": doc.employee_name}, "designation") }}
+    		</div>
+    	 </div>
+    	 <div class="row">
+    		<div class="col-xs-5 text-left">
+    		    <h4>Rate</h4>
+    		</div>
+    		<div class="col-xs-6 value">
+    		    {{doc.employee_name}}
+    		</div>
+    	</div>
+    </div>
+    <table class="table table-bordered">
+		<tbody>
+			<tr>
+				<th class="text-center" colspan="3">Earnings</th>
+				<th class="text-center" colspan="3">Deductions</th>
+				<th class="text-center" colspan="2">Payroll Period</th>
+			</tr>
+			<tr>
+				<th>Description</th>
+				<th>Hours</th>
+				<th>Amount</th>
+				<th>Description</th>
+				<th>Hours</th>
+				<th>Amount</th>
+	            <th colspan="2"> {{ doc.start_date }} TO {{ doc.end_date }}</th>
+			</tr>
+			{%- for row in doc.earnings -%}
+    			<tr>
+    				<td> {{ row.salary_component }} </td>
+    				<td> 0.00</td>
+    				<td> {{ row.amount}} </td>
+    			</tr>
+			{%- endfor -%}
+			
+			{%- for row in doc.deductions -%}
+    			<tr>
+    				<td> {{ row.salary_component }} </td>
+    				<td> 0.00</td>
+    				<td> {{ row.amount}} </td>
+    			</tr>
+			{%- endfor -%}
+			
+			
+		</tbody>
+	</table>
+    </div>
