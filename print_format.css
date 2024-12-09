@@ -1,0 +1,43 @@
+@page {
+    size: 21.6cm 27.9cm portrait;
+    margin:.5cm;
+    padding: 0;
+}
+
+.xsmall {font-size: 9px;}
+
+.table1 {border: 1px solid black;}
+
+.table2 {border: none;}
+
+.top-border {border-top: 1px solid black;}
+
+.bottom-border {border-bottom: 1px solid black;}
+
+.right-border {border-right: 1px solid black;}
+
+.no-margin-padding {
+    border-spacing: 0;
+}
+.table-heading, .contents {
+    display: flex;
+    justify-content: space-between;
+}
+
+.start {
+    justify-content: flex-start;
+}
+.center {
+    justify-content: center;
+}
+.end {
+    justify-content: flex-end;
+}
+td, tr, table {
+    margin-top: 0;
+    padding-top: 0;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
