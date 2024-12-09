@@ -195,7 +195,6 @@
         			</tr>
         			<tr colspan="3">
         	            <td colspan="2"><b> NETPAY</b> </td>
-                        <!-- "{:,.2f}" - set comman for thousands and round 2 decimal places  -->
         	            <td colspan="1"> {{ "{:,.2f}".format(doc.net_pay) }} </td>
         	          
         			</tr>
@@ -221,11 +220,11 @@
             
             <tr> 
                 <td class="top-border" colspan="3"><b>GROSS PAY:</b> </td>
-                <td class="top-border right-border" class="text-right"><b>{{ "{:,.2f}".format(doc.gross_pay) }}</b></td>
+                <td class="top-border right-border" class="text-right"><div class="text-right"><b>{{ "{:,.2f}".format(doc.gross_pay) }}</b></div></td>
                 <td class="top-border" colspan="3"><b>Deductions: </b></td>
-                <td class="top-border right-border" class="text-right"><b>{{ "{:,.2f}".format(doc.total_deduction) }}</b></td>
+                <td class="top-border right-border" class="text-right"><div class="text-right"><b>{{ "{:,.2f}".format(doc.total_deduction) }}</b></div</td>
                 <td class="top-border" colspan="1"><b> NETPAY </b></td>
-                <td class="top-border" colspan="1"><b>{{ "{:,.2f}".format(doc.net_pay) }}</b></td>
+                <td class="top-border" colspan="1"><div class="text-right"><b>{{ "{:,.2f}".format(doc.net_pay) }}</b></div></td>
             </tr>
 		</tbody>
 	</table>
