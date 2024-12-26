@@ -239,18 +239,43 @@ def recalculate_salary_slip(salary_slip):
                 hide_lwop_component.append(row)
                 salary_slip.earnings = hide_lwop_component
                 
+    deminimis_query = """
+        SELECT
+            SUM(attendance.late_in) AS total_late_in,
+            SUM(attendance.undertime) AS total_undertime
+        FROM
+            `tabAttendance` AS attendance
+        WHERE
+            attendance.employee = %s
+            AND attendance.attendance_date BETWEEN %s AND %s
+    """
+    result = frappe.db.sql(deminimis_query, (employee, start_date, end_date), as_dict=True)
+    total_undertime = round(result[0].total_undertime if result and result[0].total_undertime else 0.0,3)    
+    total_late_in = round(result[0].total_late_in if result and result[0].total_late_in else 0.0,3)    
+    
+    frappe.msgprint(f"total_undertime: {total_undertime}")
+    frappe.msgprint(f"total_late_in: {total_late_in}")
+    
                 
     de_minimis = 0
     
     # de_minimis = ((float(custom_de_minimis) / 2) - (absent_days * (float(custom_de_minimis) * 12 / float(days_of_work_per_year))))
     
+    # de_minimis = ((float(custom_de_minimis) / 2) - (absent_days * (float(custom_de_minimis) * 12 / float(days_of_work_per_year))))
+    # includes absent, late_in, and undertime
+    de_minimis = 0
     for row in salary_slip.earnings:
             if row.salary_component == "De Minimis":
                 de_minimis_monthly = custom_de_minimis / 2
-                de_minimis_daily = ((custom_de_minimis * 12) / days_of_work_per_year) * absent_days
-                de_minimis = de_minimis_monthly - de_minimis_daily
-                # frappe.msgprint(f"de_minimis: {de_minimis}")
+                de_minimis_absent = ((custom_de_minimis * 12) / days_of_work_per_year) * absent_days
+                
+                de_minimis_hourly = de_minimis_absent / 8
+                de_minimis_deduction = (de_minimis_hourly * total_undertime) + (de_minimis_hourly * total_late_in)
+                de_minimis = (de_minimis_monthly - de_minimis_absent) - de_minimis_deduction
+                    
                 row.amount = de_minimis
+                salary_slip.custom_de_minimis = de_minimis
+                frappe.msgprint(f"de_minimis: {de_minimis} - {salary_slip.custom_de_minimis}")
             
                 
     # check components tagged as basic Pay
