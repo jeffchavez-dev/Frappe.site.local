@@ -83,8 +83,6 @@ def get_data(filters):
 					conditions.append("`TabFees`.`outstanding_amount` = 0.0")
 				if "Actual Cash" in items_list:
 					conditions.append("`TabFees`.`outstanding_amount` = 0.0")
-		else:
-			conditions.append(f"")
 
 		where_clause = " AND ".join(conditions) if conditions else "1=1" 
             
