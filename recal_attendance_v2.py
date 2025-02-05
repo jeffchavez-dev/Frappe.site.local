@@ -1,3 +1,6 @@
+# Scripty type: API
+# API METHOD: recalculate_attendance
+
 def recalculate_attendance():
   try:
     data_list = frappe.get_list(
