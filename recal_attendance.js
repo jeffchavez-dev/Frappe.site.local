@@ -1,3 +1,4 @@
+// Client Script: Add button
 // call recal_attendance.py as API call
 // Apply to: List
 
