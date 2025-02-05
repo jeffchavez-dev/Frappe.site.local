@@ -1,4 +1,5 @@
 // call recal_attendance.py as API call
+// Apply to: List
 
 frappe.listview_settings['Attendance'] = {
     
