@@ -84,7 +84,7 @@ def get_data(filters):
 					if overdue_condition:
 						conditions.append(overdue_condition)
 				if "Expenses" in items_list:
-					conditions.append("`TabGL`.`credit` > 0.0")
+					conditions.append("`gl`.`credit` > 0.0")
 
 				if "Projected Cash" in items_list:
 					conditions.append("`TabFees`.`outstanding_amount` = 0.0")
@@ -590,7 +590,15 @@ def get_data(filters):
 					LEFT JOIN `tabAcademic Year` AS `TabAcademic Year` ON `TabProgram Enrollment`.`academic_year` = `TabAcademic Year`.`name`
 					LEFT JOIN `tabFee Component` AS `TabFee Component` ON `TabFees`.`name` = `TabFee Component`.`parent`
 					LEFT JOIN `tabDragonPay Payment Request` AS `TabDPPR` on `TabFees`.`dragonpay_payment_request` = `TabDPPR`.`name`
-					LEFT JOIN `tabGL Entry` AS `TabGL` ON `tabStudent`.`name` = `TabGL`.`party`
+					LEFT JOIN (
+                        SELECT
+                            party,
+                            against_voucher,
+                            SUM(credit) AS credit  -- Or other GL Entry aggregations you need
+                        FROM
+                                `tabGL Entry`
+                        GROUP BY party
+                    ) AS `gl` ON `TabFees`.`name` = `gl`.`against_voucher`
 					WHERE {where_clause} 
 					GROUP BY `tabStudent`.`name`
 					ORDER BY `tabStudent`.`name` ASC
@@ -601,7 +609,7 @@ def get_data(filters):
 		if "Expenses" in items_list: 
 			modified_sql = sql.replace(
 				"""THEN `TabFee Component`.`amount`""",
-				"""THEN `TabGL`.`credit`"""
+				"""THEN `gl`.`credit`"""
 			)
 			data = frappe.db.sql(modified_sql, as_dict=1)
 			return data

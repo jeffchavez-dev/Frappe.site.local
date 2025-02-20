@@ -583,6 +583,19 @@ def get_data(filters):
 					LEFT JOIN `tabAcademic Year` AS `TabAcademic Year` ON `TabProgram Enrollment`.`academic_year` = `TabAcademic Year`.`name`
 					LEFT JOIN `tabFee Component` AS `TabFee Component` ON `TabFees`.`name` = `TabFee Component`.`parent`
 					LEFT JOIN `tabDragonPay Payment Request` AS `TabDPPR` on `TabFees`.`dragonpay_payment_request` = `TabDPPR`.`name`
+
+					# LEFT JOIN (
+					# 	SELECT
+					# 		party,
+					# 		account AS gl_account,
+					# 		against_voucher,
+					# 		SUM(credit) AS credit  -- Or other GL Entry aggregations you need
+					# 	FROM `tabGL Entry` AS `gl`
+					# 		INNER JOIN `tabAccount` AS `ta` ON `gl`.`account` = `ta`.`name`  -- Correct join
+					# 		WHERE `ta`.`account_type` = 'Expense Account'  -- Filter within the subquery
+					# 		GROUP BY party     
+					# ) AS `gl` ON `TabFees`.`name` = `gl`.`against_voucher`
+
 					WHERE {where_clause} 
 					GROUP BY `tabStudent`.`name`
 					ORDER BY `tabStudent`.`name` ASC
